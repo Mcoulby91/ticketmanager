@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "604852875090",
+    "project_id": "ticketmanager-31154",
+    "storage_bucket": "ticketmanager-31154.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:604852875090:android:34b8afe3f419df18d3948b",
+        "android_client_info": {
+          "package_name": "com.example.manager_ticket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAduI3eVLYwigGiq4OP7I_4CoL_Sk8KQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
