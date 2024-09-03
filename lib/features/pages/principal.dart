@@ -1,9 +1,12 @@
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:manager_ticket/features/pages/ajoutTicket.dart';
 import 'package:manager_ticket/features/pages/chat.dart';
 import 'package:manager_ticket/features/pages/home_page.dart';
 import 'package:manager_ticket/features/pages/profil.dart';
+
+import '../styles/drawerPersonnaliser.dart';
 
 class Principal extends StatefulWidget {
   const Principal({super.key});
@@ -25,9 +28,14 @@ class _PrincipalState extends State<Principal> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      drawer: CustomDrawer(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const AjoutTicket()));
+        },
         child: Icon(FluentSystemIcons.ic_fluent_ticket_regular),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
@@ -38,13 +46,9 @@ class _PrincipalState extends State<Principal> {
           style: TextStyle(
               fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
         ),
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: Colors.blue,
         titleSpacing: 5,
-        leading: IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.menu),
-          color: Colors.white,
-        ),
         actions: [
           IconButton(
             onPressed: () {},
@@ -73,6 +77,7 @@ class _PrincipalState extends State<Principal> {
         child: _widgetOptions[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.white,
           onTap: _onItemTapped,
           currentIndex: _selectedIndex,
           showSelectedLabels: true,

@@ -10,6 +10,7 @@ class Social extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white.withOpacity(0),
@@ -27,13 +28,13 @@ class Social extends StatelessWidget {
         child: Column(
           children: [
             DelayedAnimation(
-                delay: 500,
+                delay: 200,
                 child: Container(
                   height: 280,
                   child: Image.asset('assets/icons/Confirmed.png'),
                 )),
             DelayedAnimation(
-                delay: 1000,
+                delay: 400,
                 child: Container(
                   height: 190,
                   child: Container(
@@ -68,7 +69,7 @@ class Social extends StatelessWidget {
                   ),
                 )),
             DelayedAnimation(
-                delay: 1500,
+                delay: 600,
                 child: Container(
                   margin: const EdgeInsets.symmetric(
                     vertical: 30,

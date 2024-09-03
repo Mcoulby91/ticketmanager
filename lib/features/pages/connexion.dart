@@ -34,7 +34,7 @@ class _ConnexionState extends State<Connexion> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                 DelayedAnimation(
-                    delay: 500,
+                    delay: 200,
                     child: Container(
                       height: 280,
                       child: Image.asset('assets/icons/Login.png'),
@@ -47,7 +47,7 @@ class _ConnexionState extends State<Connexion> {
             child: Column(
               children: [
                 DelayedAnimation(
-                    delay: 2000,
+                    delay: 800,
                     child: Container(
                       margin: const EdgeInsets.symmetric(
                         vertical: 30,
@@ -103,7 +103,7 @@ class _LoginFormState extends State<LoginForm> {
       child: Column(
         children: [
           DelayedAnimation(
-            delay: 1000,
+            delay: 400,
             child: TextField(
               decoration: InputDecoration(
                 labelText: 'Your Email',
@@ -115,7 +115,7 @@ class _LoginFormState extends State<LoginForm> {
           ),
           SizedBox(height: 30),
           DelayedAnimation(
-            delay: 1500,
+            delay: 600,
             child: TextField(
               obscureText: _obscureText,
               decoration: InputDecoration(

@@ -10,6 +10,7 @@ class Bienvenue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(vertical: 80, horizontal: 30),
@@ -20,14 +21,14 @@ class Bienvenue extends StatelessWidget {
                     height: 90,
                     child: Image.asset('assets/icons/Logo.png'),
                   ),
-                  delay: 500),
+                  delay: 200),
               const Gap(10),
               DelayedAnimation(
                   child: Container(
                     height: 450,
                     child: Image.asset('assets/icons/welcome.png'),
                   ),
-                  delay: 1000),
+                  delay: 400),
               const Gap(10),
               DelayedAnimation(
                   child: Container(
@@ -38,7 +39,7 @@ class Bienvenue extends StatelessWidget {
                           GoogleFonts.poppins(color: Colors.grey, fontSize: 16),
                     ),
                   ),
-                  delay: 1500),
+                  delay: 600),
               const Gap(30),
               DelayedAnimation(
                   child: Container(
@@ -61,7 +62,7 @@ class Bienvenue extends StatelessWidget {
                           )),
                     ),
                   ),
-                  delay: 2000),
+                  delay: 800),
             ],
           ),
         ),

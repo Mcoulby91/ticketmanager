@@ -1,4 +1,3 @@
-import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -12,6 +11,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [Text("Bienvenue")],
       ),
