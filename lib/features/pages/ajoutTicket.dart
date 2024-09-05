@@ -10,6 +10,14 @@ class AjoutTicket extends StatefulWidget {
 }
 
 class _AjoutTicketState extends State<AjoutTicket> {
+  TextEditingController titrecontrolleur = new TextEditingController();
+  TextEditingController descriptioncontrolleur = new TextEditingController();
+  // Valeur sélectionnée initialement
+  String? dropdownValue;
+
+  // Liste des options du Dropdown
+  final List<String> options = ['Technique', 'Pratique', 'Théorie'];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,16 +85,27 @@ class _AjoutTicketState extends State<AjoutTicket> {
             ),
             SizedBox(height: 7.0),
             Container(
-              padding: EdgeInsets.only(left: 7),
-              decoration: BoxDecoration(
-                  border: Border.all(),
-                  borderRadius: BorderRadius.circular(10)),
-              child: TextField(
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-                decoration: InputDecoration(border: InputBorder.none),
-              ),
-            )
+                padding: EdgeInsets.only(left: 7),
+                decoration: BoxDecoration(
+                    border: Border.all(),
+                    borderRadius: BorderRadius.circular(10)),
+                child: DropdownButton<String>(
+                  value: dropdownValue,
+                  hint: Text('Sélectionnez un catégorie'),
+                  icon: Icon(Icons.arrow_downward),
+                  style: TextStyle(color: Colors.black),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      dropdownValue = newValue;
+                    });
+                  },
+                  items: options.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ))
           ],
         ),
       ),

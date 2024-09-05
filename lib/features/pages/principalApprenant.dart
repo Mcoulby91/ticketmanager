@@ -8,16 +8,17 @@ import 'package:manager_ticket/features/pages/historiqueTicket.dart';
 import 'package:manager_ticket/features/pages/home_page.dart';
 import 'package:manager_ticket/features/pages/profil.dart';
 
+import '../styles/drawerApprenant.dart';
 import '../styles/drawerPersonnaliser.dart';
 
-class Principal extends StatefulWidget {
-  const Principal({super.key});
+class PrincipalApprenant extends StatefulWidget {
+  const PrincipalApprenant({super.key});
 
   @override
-  State<Principal> createState() => _PrincipalState();
+  State<PrincipalApprenant> createState() => _PrincipalApprenantState();
 }
 
-class _PrincipalState extends State<Principal> {
+class _PrincipalApprenantState extends State<PrincipalApprenant> {
   String? userId;
 
   @override
@@ -53,7 +54,7 @@ class _PrincipalState extends State<Principal> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      drawer: CustomDrawer(),
+      drawer: CustomDrawerApprenant(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -66,7 +67,7 @@ class _PrincipalState extends State<Principal> {
       ),
       appBar: AppBar(
         title: Text(
-          "Ticket Manager",
+          "Ticket Manager Aprenant",
           style: TextStyle(
               fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
         ),

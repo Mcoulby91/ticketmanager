@@ -4,7 +4,9 @@ import 'package:manager_ticket/firebase_options.dart';
 
 import 'features/pages/bienvenue.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 

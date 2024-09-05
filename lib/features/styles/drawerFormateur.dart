@@ -7,7 +7,7 @@ import 'package:manager_ticket/features/pages/connexion.dart';
 import 'package:manager_ticket/features/pages/historiqueTicket.dart';
 import 'package:manager_ticket/features/pages/utilisateur.dart';
 
-class CustomDrawer extends StatelessWidget {
+class CustomDrawerFormateur extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future<void> _logout() async {
@@ -49,14 +49,6 @@ class CustomDrawer extends StatelessWidget {
                 )
               ],
             ),
-          ),
-          ListTile(
-            leading: Icon(Icons.person),
-            title: Text('Utilisateurs'),
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const Utilisateur()));
-            },
           ),
           ListTile(
             leading: Icon(Icons.archive),
