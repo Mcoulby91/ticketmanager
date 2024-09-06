@@ -10,6 +10,7 @@ import 'package:manager_ticket/features/pages/profil.dart';
 
 import '../styles/drawerFormateur.dart';
 import '../styles/drawerPersonnaliser.dart';
+import 'home_pageFormateur.dart';
 
 class PrincipalFormateur extends StatefulWidget {
   const PrincipalFormateur({super.key});
@@ -42,7 +43,10 @@ class _PrincipalFormateurState extends State<PrincipalFormateur> {
   }
 
   int _selectedIndex = 0;
-  static final List<Widget> _widgetOptions = <Widget>[HomePage(), Chat()];
+  static final List<Widget> _widgetOptions = <Widget>[
+    HomePageFormateur(),
+    Chat()
+  ];
 
   void _onItemTapped(int index) {
     setState(() {

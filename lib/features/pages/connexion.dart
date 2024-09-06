@@ -27,7 +27,7 @@ class _ConnexionState extends State<Connexion> {
   //----------------------------------------------------------------
   void userLogin() async {
     final email = userEmailControlleur.text.trim();
-    final password = userEmailControlleur.text.trim();
+    final password = userPasswordControlleur.text.trim();
 
     try {
       // Connexion de l'utilisateur avec Firebase
@@ -37,22 +37,24 @@ class _ConnexionState extends State<Connexion> {
         password: password,
       );
 
-      // Récupérer le rôle de l'utilisateur dans Firestore
-      String userId = userCredential.user?.uid ?? '';
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+      // Récupérer l'utilisateur dans Firestore en utilisant l'email
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
           .collection('utilisateurs')
-          .doc(userId)
+          .where('email', isEqualTo: email)
+          .limit(1)
           .get();
 
-      if (userDoc.exists) {
+      if (userQuery.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = userQuery.docs.first;
         String role = userDoc.get('role');
+
         if (role == 'Apprenant') {
           // Rediriger l'utilisateur vers le Dashbord_apprenant
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => PrincipalApprenant()),
           );
-        } else if ((role == 'Formateur')) {
+        } else if (role == 'Formateur') {
           // Rediriger l'utilisateur vers un autre dashboard
           Navigator.pushReplacement(
             context,

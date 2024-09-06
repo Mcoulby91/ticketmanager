@@ -54,6 +54,7 @@ class CustomDrawer extends StatelessWidget {
             leading: Icon(Icons.person),
             title: Text('Utilisateurs'),
             onTap: () {
+              Navigator.of(context).pop();
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => const Utilisateur()));
             },

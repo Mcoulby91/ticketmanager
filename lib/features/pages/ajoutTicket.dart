@@ -1,6 +1,15 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+
+void main() {
+  runApp(MaterialApp(
+    home: AjoutTicket(),
+  ));
+}
 
 class AjoutTicket extends StatefulWidget {
   const AjoutTicket({super.key});
@@ -10,13 +19,60 @@ class AjoutTicket extends StatefulWidget {
 }
 
 class _AjoutTicketState extends State<AjoutTicket> {
-  TextEditingController titrecontrolleur = new TextEditingController();
-  TextEditingController descriptioncontrolleur = new TextEditingController();
-  // Valeur sélectionnée initialement
-  String? dropdownValue;
+  String? selectedCategorie;
+  String? titre;
+  String? description;
+  String? reponse = "Pas encore répondue";
+  String? statut = "Attente";
 
-  // Liste des options du Dropdown
-  final List<String> options = ['Technique', 'Pratique', 'Théorie'];
+  // Clé pour valider le formulaire
+  final _formKey = GlobalKey<FormState>();
+
+  // Envoyer les données dans Firebase
+  Future<void> _soumettreForm() async {
+    if (_formKey.currentState!.validate()) {
+      Map<String, dynamic> ticketData = {
+        'titre': titre,
+        'description': description,
+        'statut': statut,
+        'categorie': selectedCategorie,
+        'dateCreation': Timestamp.now(),
+        'reponse': reponse
+      };
+
+      try {
+        await FirebaseFirestore.instance.collection('ticket').add(ticketData);
+        ScaffoldMessenger.of(context).showSnackBar(
+          AlertDialog(
+            title: Text(
+              "Soumission Ticket",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              "Votre Ticket a été soumis avec succè et seras pris en charge le plutôt possible",
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+            elevation: 10,
+            backgroundColor: Colors.blue,
+          ) as SnackBar,
+        );
+        _formKey.currentState!.reset();
+        setState(() {
+          selectedCategorie = null;
+          titre = description = null;
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('Erreur lors de la création de l\'utilisateur: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,88 +81,126 @@ class _AjoutTicketState extends State<AjoutTicket> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(
-          "Ajouet un ticket",
+          "Ajouter un Ticket",
           style: TextStyle(
             color: Colors.blue,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      body: Container(
-        color: Colors.white,
-        margin: EdgeInsets.only(left: 20.0, top: 18.0, right: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Titre",
-              style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 7.0),
-            Container(
-              padding: EdgeInsets.only(left: 7),
-              decoration: BoxDecoration(
-                  border: Border.all(),
-                  borderRadius: BorderRadius.circular(10)),
-              child: TextField(
-                decoration: InputDecoration(border: InputBorder.none),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: <Widget>[
+              Text(
+                "Titre",
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
               ),
-            ),
-            const Gap(16),
-            Text(
-              "Description",
-              style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 7.0),
-            Container(
-              padding: EdgeInsets.only(left: 7),
-              decoration: BoxDecoration(
-                  border: Border.all(),
-                  borderRadius: BorderRadius.circular(10)),
-              child: TextField(
+              SizedBox(height: 7.0),
+              TextFormField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer le titre';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  setState(() {
+                    titre = value;
+                  });
+                },
+              ),
+              SizedBox(height: 20),
+              // Champ pour l'email
+              Text(
+                "Description",
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
                 maxLines: null,
-                keyboardType: TextInputType.multiline,
-                decoration: InputDecoration(border: InputBorder.none),
               ),
-            ),
-            const Gap(16),
-            Text(
-              "Catégorie",
-              style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 7.0),
-            Container(
-                padding: EdgeInsets.only(left: 7),
-                decoration: BoxDecoration(
-                    border: Border.all(),
-                    borderRadius: BorderRadius.circular(10)),
-                child: DropdownButton<String>(
-                  value: dropdownValue,
-                  hint: Text('Sélectionnez un catégorie'),
-                  icon: Icon(Icons.arrow_downward),
-                  style: TextStyle(color: Colors.black),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      dropdownValue = newValue;
-                    });
-                  },
-                  items: options.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ))
-          ],
+              SizedBox(height: 7.0),
+              TextFormField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer la description';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  setState(() {
+                    description = value;
+                  });
+                },
+              ),
+              SizedBox(height: 20),
+
+              // DropdownButton pour sélectionner la catégorie
+              Text(
+                "Catégorie",
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 7.0),
+              DropdownButtonFormField<String>(
+                value: selectedCategorie,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                items: ['Théorie', 'Pratique', 'Pédagogie']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategorie = newValue;
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez sélectionner une catégorie';
+                  }
+                  return null;
+                },
+              ),
+              //Button pour créer
+              SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () {
+                  _soumettreForm(); // Appeler la soumission
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                ),
+                child: Text(
+                  'Ajouter',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

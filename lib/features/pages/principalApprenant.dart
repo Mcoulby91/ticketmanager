@@ -10,6 +10,7 @@ import 'package:manager_ticket/features/pages/profil.dart';
 
 import '../styles/drawerApprenant.dart';
 import '../styles/drawerPersonnaliser.dart';
+import 'home_pageApprenant.dart';
 
 class PrincipalApprenant extends StatefulWidget {
   const PrincipalApprenant({super.key});
@@ -42,7 +43,10 @@ class _PrincipalApprenantState extends State<PrincipalApprenant> {
   }
 
   int _selectedIndex = 0;
-  static final List<Widget> _widgetOptions = <Widget>[HomePage(), Chat()];
+  static final List<Widget> _widgetOptions = <Widget>[
+    HomePageapprenant(),
+    Chat()
+  ];
 
   void _onItemTapped(int index) {
     setState(() {

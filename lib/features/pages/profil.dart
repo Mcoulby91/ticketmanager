@@ -67,7 +67,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profil Utilisateur'),
+        title: Text('Profil',
+            style: TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+            )),
       ),
       body: userData == null
           ? Center(child: CircularProgressIndicator())
@@ -335,32 +339,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ] else if (userData!['role'] == 'Admin') ...[
-                        const Gap(5),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          width: 650,
-                          height: 50,
-                          decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Row(
-                            children: [
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    "Vous êtes Administrateur",
-                                    style: TextStyle(
-                                        fontSize: 19,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                                  )
                                 ],
                               ),
                             ],

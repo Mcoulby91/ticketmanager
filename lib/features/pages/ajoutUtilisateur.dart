@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -29,6 +28,20 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
   String? motDePasse;
   XFile? _imageFile;
   final ImagePicker _picker = ImagePicker();
+  String? _imageError;
+
+  // Fonction pour valider la sélection de l'image
+  void _validateImage() {
+    if (_imageFile == null) {
+      setState(() {
+        _imageError = 'Vous devez choisir une image';
+      });
+    } else {
+      setState(() {
+        _imageError = null; // Pas d'erreur
+      });
+    }
+  }
 
   // Fonction pour sélectionner une image de la galerie
   Future<void> _pickImage() async {
@@ -39,19 +52,14 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
     });
   }
 
+  // Fonction pour uploader l'image sur Firebase Storage
   Future<String?> _uploadImage(XFile image) async {
     try {
-      // Créer une référence de stockage pour l'image
       final storageRef = FirebaseStorage.instance.ref().child(
           'user_images/${DateTime.now().millisecondsSinceEpoch}_${image.name}');
-
-      // Télécharger l'image vers Firebase Storage
       final uploadTask = storageRef.putFile(File(image.path));
-
-      // Attendre la fin du téléchargement et obtenir l'URL de l'image
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
-
       return downloadUrl;
     } catch (e) {
       print('Erreur lors du téléchargement de l\'image: $e');
@@ -62,7 +70,7 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
   // Clé pour valider le formulaire
   final _formKey = GlobalKey<FormState>();
 
-  // vérifier si l'utilisateur exist
+  // Fonction pour vérifier si l'utilisateur existe
   Future<bool> _userExists(String email) async {
     final QuerySnapshot result = await FirebaseFirestore.instance
         .collection('utilisateurs')
@@ -71,9 +79,10 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
     return result.docs.isNotEmpty;
   }
 
-// envoyer les données dans firebase
+  // Envoyer les données dans Firebase
   Future<void> _soumettreForm() async {
-    if (_formKey.currentState!.validate()) {
+    _validateImage(); // Vérifier d'abord si une image est sélectionnée
+    if (_formKey.currentState!.validate() && _imageError == null) {
       if (await _userExists(email!)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Un utilisateur avec cet email existe déjà.')),
@@ -84,7 +93,7 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
       if (_imageFile != null) {
         imageUrl = await _uploadImage(_imageFile!);
       }
-      // Créer l'utilisateur avec Firebase Authentication
+
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email!, password: motDePasse!);
 
@@ -93,7 +102,7 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
         'email': email,
         'motDePasse': motDePasse,
         'role': selectedRole,
-        'dateCreation': Timestamp.now(), // Date de création
+        'dateCreation': Timestamp.now(),
         if (imageUrl != null) 'imageUrl': imageUrl,
         if (selectedRole == 'Apprenant') ...{
           'promotion': promotion,
@@ -110,7 +119,6 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Utilisateur créé avec succès!')),
         );
-        // Réinitialiser les champs aprés création
         _formKey.currentState!.reset();
         setState(() {
           _imageFile = null;
@@ -169,6 +177,15 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
                         ),
                 ),
               ),
+              if (_imageError != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    _imageError!,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              // Champs pour le nom, email, etc...
               // Champ pour le nom
               Text(
                 "Nom",
@@ -355,13 +372,12 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
                   },
                 ),
               ],
+
+              //Button pour créer
               SizedBox(height: 30),
-              // Bouton Créer
               ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _soumettreForm();
-                  }
+                  _soumettreForm(); // Appeler la soumission
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

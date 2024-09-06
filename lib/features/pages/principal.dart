@@ -18,29 +18,8 @@ class Principal extends StatefulWidget {
 }
 
 class _PrincipalState extends State<Principal> {
-  String? userId;
-
-  @override
-  void initState() {
-    super.initState();
-    getCurrentUserId();
-  }
-
-  Future<void> getCurrentUserId() async {
-    User? user = FirebaseAuth.instance.currentUser;
-
-    if (user != null) {
-      setState(() {
-        userId = user.uid; // Récupération de l'UID de l'utilisateur courant
-      });
-    } else {
-      setState(() {
-        userId = "Aucun utilisateur connecté";
-      });
-    }
-  }
-
   int _selectedIndex = 0;
+
   static final List<Widget> _widgetOptions = <Widget>[HomePage(), Chat()];
 
   void _onItemTapped(int index) {
