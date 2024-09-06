@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 
 class HomePageapprenant extends StatefulWidget {
   const HomePageapprenant({super.key});
@@ -132,7 +134,7 @@ class _HomePageapprenantState extends State<HomePageapprenant> {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

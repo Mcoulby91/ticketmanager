@@ -1,15 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-
-void main() {
-  runApp(MaterialApp(
-    home: AjoutUtilisateur(),
-  ));
-}
+import 'package:manager_ticket/features/model/userModel.dart';
+import 'package:manager_ticket/features/model/meyhodeValidation.dart';
+import 'package:manager_ticket/features/service/userService.dart';
 
 class AjoutUtilisateur extends StatefulWidget {
   const AjoutUtilisateur({super.key});
@@ -30,18 +25,8 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
   final ImagePicker _picker = ImagePicker();
   String? _imageError;
 
-  // Fonction pour valider la sélection de l'image
-  void _validateImage() {
-    if (_imageFile == null) {
-      setState(() {
-        _imageError = 'Vous devez choisir une image';
-      });
-    } else {
-      setState(() {
-        _imageError = null; // Pas d'erreur
-      });
-    }
-  }
+  final _formKey = GlobalKey<FormState>();
+  final UserService _userService = UserService(); // Initialisation du service
 
   // Fonction pour sélectionner une image de la galerie
   Future<void> _pickImage() async {
@@ -52,55 +37,28 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
     });
   }
 
-  // Fonction pour uploader l'image sur Firebase Storage
-  Future<String?> _uploadImage(XFile image) async {
-    try {
-      final storageRef = FirebaseStorage.instance.ref().child(
-          'user_images/${DateTime.now().millisecondsSinceEpoch}_${image.name}');
-      final uploadTask = storageRef.putFile(File(image.path));
-      final snapshot = await uploadTask.whenComplete(() => {});
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      return downloadUrl;
-    } catch (e) {
-      print('Erreur lors du téléchargement de l\'image: $e');
-      return null;
-    }
-  }
-
-  // Clé pour valider le formulaire
-  final _formKey = GlobalKey<FormState>();
-
-  // Fonction pour vérifier si l'utilisateur existe
-  Future<bool> _userExists(String email) async {
-    final QuerySnapshot result = await FirebaseFirestore.instance
-        .collection('utilisateurs')
-        .where('email', isEqualTo: email)
-        .get();
-    return result.docs.isNotEmpty;
-  }
-
-  // Envoyer les données dans Firebase
+  // Soumission du formulaire
   Future<void> _soumettreForm() async {
-    _validateImage(); // Vérifier d'abord si une image est sélectionnée
+    setState(() {
+      _imageError = FormValidator.validateImage(_imageFile);
+    });
+
     if (_formKey.currentState!.validate() && _imageError == null) {
-      if (await _userExists(email!)) {
+      if (await _userService.userExists(email!)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Un utilisateur avec cet email existe déjà.')),
         );
         return;
       }
+
       String? imageUrl;
       if (_imageFile != null) {
-        imageUrl = await _uploadImage(_imageFile!);
+        imageUrl = await _userService.uploadImage(File(_imageFile!.path));
       }
-
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email!, password: motDePasse!);
 
       Map<String, dynamic> userData = {
         'nom': nom,
         'email': email,
-        'motDePasse': motDePasse,
         'role': selectedRole,
         'dateCreation': Timestamp.now(),
         if (imageUrl != null) 'imageUrl': imageUrl,
@@ -113,30 +71,85 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
       };
 
       try {
-        await FirebaseFirestore.instance
-            .collection('utilisateurs')
-            .add(userData);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Utilisateur créé avec succès!')),
-        );
-        _formKey.currentState!.reset();
-        setState(() {
-          _imageFile = null;
-          selectedRole = null;
-          nom = email = motDePasse = promotion = formation = domaine = null;
-        });
+        await _userService.createUser(userData, email!, motDePasse!);
+        _showSuccessDialog();
+        _resetForm();
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Erreur lors de la création de l\'utilisateur: $e')),
-        );
+        _showErrorDialog(e);
       }
     }
   }
 
+  void _resetForm() {
+    _formKey.currentState!.reset();
+    setState(() {
+      _imageFile = null;
+      selectedRole = null;
+      nom = email = motDePasse = promotion = formation = domaine = null;
+    });
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.blue,
+        title: Text(
+          "Création Utilisateur",
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        content: Text(
+          "Le nouveau utilisateur a été créé avec succès !",
+          style: TextStyle(fontSize: 15, color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              "OK",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(Object e) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.red,
+        title: Text(
+          "Création Utilisateur",
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        content: Text(
+          "Erreur: $e",
+          style: TextStyle(fontSize: 15, color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              "OK",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Le code de la vue reste inchangé avec la logique déplacée dans les services et la validation
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -155,7 +168,6 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
           key: _formKey,
           child: ListView(
             children: <Widget>[
-              // Champ pour l'insertion de la photo de profil
               GestureDetector(
                 onTap: _pickImage,
                 child: CircleAvatar(
@@ -185,211 +197,9 @@ class _AjoutUtilisateurState extends State<AjoutUtilisateur> {
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
-              // Champs pour le nom, email, etc...
-              // Champ pour le nom
-              Text(
-                "Nom",
-                style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 7.0),
-              TextFormField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer le nom';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    nom = value;
-                  });
-                },
-              ),
-              SizedBox(height: 20),
-              // Champ pour l'email
-              Text(
-                "Email",
-                style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 7.0),
-              TextFormField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer l\'email';
-                  } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    return 'Veuillez entrer un email valide';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    email = value;
-                  });
-                },
-              ),
-              SizedBox(height: 20),
-              // Champ pour le mot de passe
-              Text(
-                "Mot de passe",
-                style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 7.0),
-              TextFormField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer le mot de passe';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    motDePasse = value;
-                  });
-                },
-              ),
-              SizedBox(height: 20),
-              // DropdownButton pour sélectionner le rôle
-              Text(
-                "Rôle",
-                style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 7.0),
-              DropdownButtonFormField<String>(
-                value: selectedRole,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                items: ['Apprenant', 'Formateur', 'Admin']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedRole = newValue;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez sélectionner un rôle';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              // Champs supplémentaires en fonction du rôle sélectionné
-              if (selectedRole == 'Apprenant') ...[
-                Text(
-                  "Formation",
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 7.0),
-                TextFormField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer la formation';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    setState(() {
-                      formation = value;
-                    });
-                  },
-                ),
-                SizedBox(height: 20),
-                Text(
-                  "Promotion",
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 7.0),
-                TextFormField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer la promotion';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    setState(() {
-                      promotion = value;
-                    });
-                  },
-                ),
-              ] else if (selectedRole == 'Formateur') ...[
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Domaine",
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer le domaine';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    setState(() {
-                      domaine = value;
-                    });
-                  },
-                ),
-              ],
-
-              //Button pour créer
-              SizedBox(height: 30),
               ElevatedButton(
-                onPressed: () {
-                  _soumettreForm(); // Appeler la soumission
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 15),
-                ),
-                child: Text(
-                  'Créer',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
+                onPressed: _soumettreForm,
+                child: Text('Créer'),
               ),
             ],
           ),

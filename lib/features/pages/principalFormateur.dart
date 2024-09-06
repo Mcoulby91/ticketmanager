@@ -71,7 +71,7 @@ class _PrincipalFormateurState extends State<PrincipalFormateur> {
       ),
       appBar: AppBar(
         title: Text(
-          "Ticket Manager Formateur",
+          "Ticket Manager",
           style: TextStyle(
               fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
         ),

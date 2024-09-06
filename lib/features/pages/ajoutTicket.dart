@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 
 void main() {
   runApp(MaterialApp(
@@ -31,44 +28,117 @@ class _AjoutTicketState extends State<AjoutTicket> {
   // Envoyer les données dans Firebase
   Future<void> _soumettreForm() async {
     if (_formKey.currentState!.validate()) {
-      Map<String, dynamic> ticketData = {
-        'titre': titre,
-        'description': description,
-        'statut': statut,
-        'categorie': selectedCategorie,
-        'dateCreation': Timestamp.now(),
-        'reponse': reponse
-      };
+      // Obtenir l'utilisateur courant
+      User? user = FirebaseAuth.instance.currentUser;
 
-      try {
-        await FirebaseFirestore.instance.collection('ticket').add(ticketData);
-        ScaffoldMessenger.of(context).showSnackBar(
-          AlertDialog(
+      if (user != null) {
+        // Récupérer l'email de l'utilisateur courant
+        String? email = user.email;
+
+        Map<String, dynamic> ticketData = {
+          'titre': titre,
+          'description': description,
+          'statut': statut,
+          'categorie': selectedCategorie,
+          'dateCreation': Timestamp.now(),
+          'reponse': reponse,
+          'email': email,
+        };
+
+        try {
+          await FirebaseFirestore.instance.collection('ticket').add(ticketData);
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: Colors.blue,
+              title: Text(
+                "Soumission Ticket",
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              content: Text(
+                "Votre Ticket a été soumis avec succès et sera pris en charge le plus tôt possible.",
+                style: TextStyle(fontSize: 15, color: Colors.white),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          );
+
+          _formKey.currentState!.reset();
+          setState(() {
+            selectedCategorie = null;
+            titre = description = null;
+          });
+        } catch (e) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: Colors.red,
+              title: Text(
+                "Soumission Ticket",
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              content: Text(
+                "Votre Ticket n'a pas été soumis, une erreur est surnenue lors de l'envoie. : $e",
+                style: TextStyle(fontSize: 15, color: Colors.white),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.red,
             title: Text(
               "Soumission Ticket",
               style: TextStyle(
-                  color: Colors.white,
                   fontSize: 16,
-                  fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             content: Text(
-              "Votre Ticket a été soumis avec succè et seras pris en charge le plutôt possible",
-              style: TextStyle(color: Colors.white, fontSize: 14),
+              "Utilisateur non authentifier",
+              style: TextStyle(fontSize: 15, color: Colors.white),
             ),
-            elevation: 10,
-            backgroundColor: Colors.blue,
-          ) as SnackBar,
-        );
-        _formKey.currentState!.reset();
-        setState(() {
-          selectedCategorie = null;
-          titre = description = null;
-        });
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Erreur lors de la création de l\'utilisateur: $e')),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  "OK",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
         );
       }
     }
@@ -119,21 +189,20 @@ class _AjoutTicketState extends State<AjoutTicket> {
                 },
               ),
               SizedBox(height: 20),
-              // Champ pour l'email
               Text(
                 "Description",
                 style: TextStyle(
                     color: Colors.blue,
                     fontSize: 16,
                     fontWeight: FontWeight.bold),
-                maxLines: null,
               ),
               SizedBox(height: 7.0),
               TextFormField(
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                 ),
-                keyboardType: TextInputType.emailAddress,
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer la description';
@@ -147,8 +216,6 @@ class _AjoutTicketState extends State<AjoutTicket> {
                 },
               ),
               SizedBox(height: 20),
-
-              // DropdownButton pour sélectionner la catégorie
               Text(
                 "Catégorie",
                 style: TextStyle(
@@ -181,11 +248,10 @@ class _AjoutTicketState extends State<AjoutTicket> {
                   return null;
                 },
               ),
-              //Button pour créer
               SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  _soumettreForm(); // Appeler la soumission
+                  _soumettreForm();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

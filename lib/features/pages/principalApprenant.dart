@@ -71,7 +71,7 @@ class _PrincipalApprenantState extends State<PrincipalApprenant> {
       ),
       appBar: AppBar(
         title: Text(
-          "Ticket Manager Aprenant",
+          "Ticket Manager",
           style: TextStyle(
               fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
         ),

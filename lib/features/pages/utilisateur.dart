@@ -269,15 +269,23 @@ class _UtilisateurState extends State<Utilisateur> {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: Text(user['nom']),
+                                  title: Text(
+                                    user['nom'],
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.blue,
                                   content: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text("Email: ${user['email']}"),
+                                      Text("Email: ${user['email']}",
+                                          style:
+                                              TextStyle(color: Colors.white)),
                                       Text("Rôle: $role"),
-                                      Text("Date de création: $dateCreation"),
+                                      Text("Date de création: $dateCreation",
+                                          style:
+                                              TextStyle(color: Colors.white)),
                                       if (additionalInfo.isNotEmpty)
                                         Text(additionalInfo),
                                     ],
